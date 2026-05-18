@@ -17,13 +17,14 @@ impl<T> Node<T> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DList<T> {
     head: Option<NonNull<Node<T>>>,
     tail: Option<NonNull<Node<T>>>,
     len: usize,
     /*
-    The PhantomData<T> is a marker used to inform the compiler that the DoublyLinkedList struct logically acts as if it owns values of type T, even though it only stores pointers.[6, 15] This is essential for correct drop-checking and variance.
+    The PhantomData<T> is a marker used to inform the compiler that the DoublyLinkedList struct logically acts as if it owns values of type T,
+    even though it only stores pointers.[6, 15] This is essential for correct drop-checking and variance.
         */
     _marker: PhantomData<T>,
 }
@@ -36,6 +37,10 @@ impl<T> DList<T> {
             len: 0,
             _marker: PhantomData,
         }
+    }
+
+    pub fn head(&self) -> Option<NonNull<Node<T>>> {
+        self.head
     }
 
     /*
@@ -106,6 +111,31 @@ impl<T> DList<T> {
             }
             self.len -= 1;
             node.element
+        })
+    }
+}
+
+pub struct DListIter<'a, T> {
+    current: Option<NonNull<Node<T>>>,
+    maker: PhantomData<&'a T>,
+}
+
+impl<'a, T> DListIter<'a, T> {
+    pub fn new(head: Option<NonNull<Node<T>>>) -> Self {
+        Self {
+            current: head,
+            maker: PhantomData,
+        }
+    }
+}
+
+impl<'a, T> Iterator for DListIter<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.current.map(|node_ptr| unsafe {
+            let node = node_ptr.as_ref();
+            self.current = node.next;
+            &node.element
         })
     }
 }

@@ -1,4 +1,4 @@
-use unsafe_rust::doubly_linked_list::DList;
+use unsafe_rust::doubly_linked_list::{DList, DListIter};
 
 fn main() {
     let mut list: DList<&str> = DList::new();
@@ -6,6 +6,13 @@ fn main() {
     list.push_front("B");
     list.push_front("C");
     list.push_back("1");
+
+    {
+        let iter = DListIter::new(list.head());
+        for v in iter {
+            println!("read: {} from DList Iterator", *v);
+        }
+    }
 
     let item = list.pop_front();
     println!("pop front from list: {:?}", item); // C
